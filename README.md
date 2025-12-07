@@ -1,24 +1,31 @@
-# cs2-blockmaker
+<div align="center">
+  <img width="50" height="50" alt="cssharp" src="https://github.com/user-attachments/assets/3393573f-29be-46e1-bc30-fafaec573456" />
+	<h3><strong>Block Maker</strong></h3>
+	<h4>a plugin to create and save blocks, mostly for HNS</h4>
+	<h2>
+		<img src="https://img.shields.io/github/downloads/exkludera-cssharp/BlockMaker/total" alt="Downloads">
+		<img src="https://img.shields.io/github/stars/exkludera-cssharp/BlockMaker?style=flat&logo=github" alt="Stars">
+		<img src="https://img.shields.io/github/forks/exkludera-cssharp/BlockMaker?style=flat&logo=github" alt="Forks">
+		<img src="https://img.shields.io/github/license/exkludera-cssharp/BlockMaker" alt="License">
+	</h2>
+	<!--<a href="https://discord.gg" target="_blank"><img src="https://img.shields.io/badge/Discord%20Server-7289da?style=for-the-badge&logo=discord&logoColor=white" /></a> <br>-->
+	<a href="https://ko-fi.com/exkludera" target="_blank"><img src="https://img.shields.io/badge/KoFi-af00bf?style=for-the-badge&logo=kofi&logoColor=white" alt="Buy Me a Coffee at ko-fi.com" /></a>
+	<a href="https://paypal.com/donate/?hosted_button_id=6AWPNVF5TLUC8" target="_blank"><img src="https://img.shields.io/badge/PayPal-0095ff?style=for-the-badge&logo=paypal&logoColor=white" alt="PayPal"  /></a>
+	<a href="https://github.com/sponsors/exkludera" target="_blank"><img src="https://img.shields.io/badge/Sponsor-696969?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Sponsor" /></a>
+</div>
 
-**BlockMaker plugin to create and save blocks, mostly for HNS**
+> [!NOTE]
+> thanks to [UgurhanK/BaseBuilder](https://github.com/UgurhanK/BaseBuilder) for the code base
+>
+> inspired by [BlockBuilder by x3ro](https://forums.alliedmods.net/showthread.php?t=258329)
 
-> block managing can be done within the building menu /bm
+> block managing can be done within the building menu /bm or commands
 >
 > hold USE button to grab block, look around to move, left and right click to change distance
 >
 > hold RELOAD button and move your mouse to rotate the block
 
-<br>
-
-| Video Showcase                                                                                               |
-| ------------------------------------------------------------------------------------------------------------ |
-| [![showcase](https://img.youtube.com/vi/IEcDrD1sUSc/hqdefault.jpg)](https://youtube.com/watch?v=IEcDrD1sUSc) |
-
-<br>
-
-## information:
-
-### requirements
+## Requirements
 
 - [MetaMod](https://github.com/alliedmodders/metamod-source)
 - [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp)
@@ -27,18 +34,16 @@
 - [CS2MenuManager](https://github.com/schwarper/CS2MenuManager)
 - [ChaseMod](https://github.com/ipsvn/ChaseMod) (optional for gameplay)
 
-<br>
+## Showcase
+<details>
+	<summary>content</summary>
 
-> [!NOTE]
-> thanks to [UgurhanK/BaseBuilder](https://github.com/UgurhanK/BaseBuilder) for the code base
->
-> inspired by [BlockBuilder by x3ro](https://forums.alliedmods.net/showthread.php?t=258329)
+| YouTube Video                                                                                               |
+| ------------------------------------------------------------------------------------------------------------ |
+| [![showcase](https://img.youtube.com/vi/IEcDrD1sUSc/hqdefault.jpg)](https://youtube.com/watch?v=IEcDrD1sUSc) |
+</details>
 
-<img src="https://github.com/user-attachments/assets/53e486cc-8da4-45ab-bc6e-eb38145aba36" height="200px"> <br>
-
-<br>
-
-## example config
+## Config
 
 <details>
 <summary>BlockMaker.json</summary>
@@ -542,5 +547,3 @@
 }
 ```
 </details>
-
-<br> <a href="https://ko-fi.com/exkludera" target="blank"><img src="https://cdn.ko-fi.com/cdn/kofi5.png" height="48px" alt="Buy Me a Coffee at ko-fi.com"></a>
