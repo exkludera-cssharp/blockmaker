@@ -74,7 +74,7 @@ public partial class Blocks
         }
 
         var endPos = trace.Value.Position;
-        var BuilderData = instance.BuilderData[player.Slot];
+        var BuilderData = Building.Builders[player.Slot];
 
         try
         {
@@ -149,8 +149,6 @@ public partial class Blocks
             if (!string.IsNullOrEmpty(effect) && effect != "None")
                 CreateParticle(block, effect, size);
 
-            CreateTrigger(block, size);
-
             if (properties == null)
             {
                 if (Properties.BlockProperties.TryGetValue(type.Split('.')[0], out var defaultProperties))
@@ -181,42 +179,6 @@ public partial class Blocks
             }
 
             Entities[block] = new Data(block, type, pole, size, color, transparency, team, effect, properties);
-
-            /*if (type.Contains("water", StringComparison.OrdinalIgnoreCase))
-            {
-                block.CollisionRulesChanged(CollisionGroup.COLLISION_GROUP_DISSOLVING);
-
-                var water = Utilities.CreateEntityByName<CFuncWater>("func_water")!;
-
-                water.SetModel(model);
-                water.Teleport(block.AbsOrigin, block.AbsRotation);
-                water.DispatchSpawn();
-            }*/
-        }
-    }
-
-    public static Dictionary<CTriggerMultiple, CBaseProp> Triggers = new();
-    private static void CreateTrigger(CBaseProp block, string size)
-    {
-        var trigger = Utilities.CreateEntityByName<CTriggerMultiple>("trigger_multiple");
-
-        if (trigger != null && trigger.IsValid && trigger.Entity != null)
-        {
-            trigger.Spawnflags = 1;
-            trigger.Entity.Name = block.Entity!.Name + "_trigger";
-            trigger.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags &= ~(uint)(1 << 2);
-
-            trigger.Collision.SolidFlags = 0;
-            trigger.Collision.CollisionGroup = 14;
-            trigger.Collision.SolidType = SolidType_t.SOLID_VPHYSICS;
-
-            trigger.Teleport(block.AbsOrigin, block.AbsRotation);
-            trigger.SetModel(block.CBodyComponent!.SceneNode!.GetSkeletonInstance().ModelState.ModelName);
-            trigger.DispatchSpawn();
-            trigger.AcceptInput("SetScale", trigger, trigger, Utils.GetSize(size).ToString());
-            trigger.AcceptInput("SetParent", block, trigger, "!activator");
-
-            Triggers.Add(trigger, block);
         }
     }
 
@@ -227,7 +189,6 @@ public partial class Blocks
             Utils.RemoveEntities();
 
             Entities.Clear();
-            Triggers.Clear();
 
             Teleports.Entities.Clear();
             Teleports.isNext.Clear();
@@ -251,13 +212,6 @@ public partial class Blocks
 
                 block.Entity.Remove();
                 Entities.Remove(block.Entity);
-
-                var trigger = Triggers.FirstOrDefault(kvp => kvp.Value == block.Entity).Key;
-                if (trigger != null)
-                {
-                    trigger.Remove();
-                    Triggers.Remove(trigger);
-                }
 
                 if (config.Sounds.Building.Enabled)
                     player.EmitSound(config.Sounds.Building.Delete);
@@ -319,7 +273,6 @@ public partial class Blocks
             { Models.Data.ShotgunHeavy.Title, new Property{ Value = 1f, Cooldown = 999f } },
             { Models.Data.SMG.Title, new Property{ Value = 1f, Cooldown = 999f } },
             { Models.Data.Barrier.Title, new Property{ Duration = 0.01f, Value = 0f, Cooldown = 2.0f } },
-            //{ Models.Data.Water.Title, new Property{ Duration = 0f, Value = 0f, Cooldown = 0f } },
         };
 
         public static Dictionary<string, Property> BlockProperties { get; set; } = new();

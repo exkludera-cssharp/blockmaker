@@ -55,7 +55,6 @@ public partial class Blocks
         public BlockNoFallDmg NoFallDmg { get; set; } = new();
         public BlockHoney Honey { get; set; } = new();
         public BlockBarrier Barrier { get; set; } = new();
-        public BlockWater Water { get; set; } = new();
 
         public List<CustomBlockModel> CustomBlocks { get; set; } = new List<CustomBlockModel>();
         public List<BlockModel> GetAllBlocks()
@@ -65,7 +64,7 @@ public partial class Blocks
             Platform, Bhop, Health, Grenade, Gravity, Glass, Frost, Flash, Fire, Delay,
             Death, Damage, Pistol, Rifle, Sniper, SMG, ShotgunHeavy, Stealth, Speed,
             SpeedBoost, Slap, Random, Nuke, Invincibility, Ice, Camouflage, Trampoline,
-            NoFallDmg, Honey, Barrier, Water
+            NoFallDmg, Honey, Barrier
         };
 
             if (CustomBlocks != null && CustomBlocks.Count > 0)
@@ -413,16 +412,6 @@ public partial class Blocks
             Title = "Barrier";
             Block = "models/blockmaker/barrier/block.vmdl";
             Pole = "models/blockmaker/barrier/pole.vmdl";
-        }
-    }
-
-    public class BlockWater : BlockModel
-    {
-        public BlockWater()
-        {
-            Title = "Water";
-            Block = "models/blockmaker/water/block.vmdl";
-            Pole = "models/blockmaker/water/pole.vmdl";
         }
     }
 }

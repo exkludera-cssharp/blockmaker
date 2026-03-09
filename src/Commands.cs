@@ -8,7 +8,7 @@ public static class Commands
     private static Plugin Instance = Plugin.Instance;
     private static Config config = Instance.Config;
     private static Config_Commands commands = Instance.Config.Commands;
-    private static Dictionary<int, Building.BuilderData> BuilderData = Instance.BuilderData;
+    private static Dictionary<int, Building.BuilderData> BuilderData = Building.Builders;
 
     public static void Load()
     {
@@ -110,27 +110,27 @@ public static class Commands
             return;
         }
 
-        if (!Instance.buildMode)
+        if (!Building.BuildMode)
         {
-            Instance.buildMode = true;
+            Building.BuildMode = true;
             foreach (var target in Utilities.GetPlayers().Where(p => !p.IsBot))
             {
                 if (Utils.HasPermission(target) || Files.Builders.steamids.Contains(target.SteamID.ToString()))
                 {
-                    BuilderData[player.Slot] = new Building.BuilderData { BlockType = Blocks.Models.Data.Platform.Title };
-                    Building.PlayerHolds[target] = new Building.BuildData();
+                    BuilderData[target.Slot] = new Building.BuilderData { BlockType = Blocks.Models.Data.Platform.Title };
+                    Building.BuilderHolds[target] = new Building.BuildData();
                 }
             }
         }
         else
         {
-            Instance.buildMode = false;
+            Building.BuildMode = false;
             BuilderData.Clear();
-            Building.PlayerHolds.Clear();
+            Building.BuilderHolds.Clear();
         }
 
-        string status = Instance.buildMode ? "Enabled" : "Disabled";
-        char color = Instance.buildMode ? ChatColors.Green : ChatColors.Red;
+        string status = Building.BuildMode ? "Enabled" : "Disabled";
+        char color = Building.BuildMode ? ChatColors.Green : ChatColors.Red;
 
         Utils.PrintToChatAll($"Build Mode: {color}{status} {ChatColors.Grey}by {ChatColors.LightPurple}{player.PlayerName}");
     }
@@ -160,7 +160,7 @@ public static class Commands
         if (isBuilder)
             BuilderData.Remove(targetPlayer.Slot);
 
-        else BuilderData[player.Slot] = new Building.BuilderData { BlockType = Blocks.Models.Data.Platform.Title };
+        else BuilderData[targetPlayer.Slot] = new Building.BuilderData { BlockType = Blocks.Models.Data.Platform.Title };
 
         var action = isBuilder ? "removed" : "granted";
         var color = isBuilder ? ChatColors.Red : ChatColors.Green;

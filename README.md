@@ -88,6 +88,7 @@
     },
     "Teleports": {
       "ForceAngles": false,
+      "AllowEntities": true,
       "Velocity": 300,
       "Entry": {
         "Model": "models/blockmaker/teleport/model.vmdl",

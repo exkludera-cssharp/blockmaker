@@ -56,14 +56,10 @@ public partial class Lights
         public VectorUtils.QAngleDTO Rotation { get; set; } = new();
     }
 
-    private static Plugin Instance = Plugin.Instance;
-    private static Config Config = Instance.Config;
-
     public static Dictionary<CBaseProp, Data> Entities = new();
-
     public static void Create(CCSPlayerController player)
     {
-        var BuilderData = Instance.BuilderData[player.Slot];
+        var BuilderData = Building.Builders[player.Slot];
 
         CGameTrace? trace = TraceRay.TraceShape(player.GetEyePosition()!, player.PlayerPawn.Value?.EyeAngles!, TraceMask.MaskShot, player);
         if (trace == null || !trace.HasValue || trace.Value.Position.Length() == 0)
@@ -109,10 +105,10 @@ public partial class Lights
                 entity.Entity.Name = "blockmaker_light_entity";
                 entity.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags &= ~(uint)(1 << 2);
 
-                if (Config.Settings.Lights.HideModel && !Instance.buildMode)
+                if (Plugin.Instance.Config.Settings.Lights.HideModel && !Building.BuildMode)
                     entity.Render = Color.Transparent;
 
-                entity.SetModel(Instance.Config.Settings.Lights.Model);
+                entity.SetModel(Plugin.Instance.Config.Settings.Lights.Model);
                 entity.Teleport(position, rotation);
                 entity.DispatchSpawn();
                 entity.AcceptInput("DisableMotion");
@@ -126,7 +122,7 @@ public partial class Lights
 
     public static bool Delete(CCSPlayerController player, bool message = true, bool replace = false)
     {
-        var BuilderData = Instance.BuilderData[player.Slot];
+        var BuilderData = Building.Builders[player.Slot];
 
         var entity = player.GetBlockAim();
 
@@ -160,7 +156,7 @@ public partial class Lights
 
     public static void Settings(CCSPlayerController player, string type, string input)
     {
-        var data = Instance.BuilderData[player.Slot];
+        var data = Building.Builders[player.Slot];
 
         switch (type)
         {

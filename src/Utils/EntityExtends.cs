@@ -24,7 +24,7 @@ public static class EntityExtends
         CCSPlayerPawn? pawn = player.Pawn();
 
         if (pawn != null)
-            pawn.GravityScale = value;
+            pawn.ActualGravityScale = value;
     }
 
     public static void SetVelocity(this CCSPlayerController? player, float value)

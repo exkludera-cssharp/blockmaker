@@ -5,12 +5,10 @@ using CounterStrikeSharp.API.Core.Translations;
 public partial class Plugin : BasePlugin, IPluginConfig<Config>
 {
     public override string ModuleName => "Block Maker";
-    public override string ModuleVersion => "0.2.4";
+    public override string ModuleVersion => "0.2.5";
     public override string ModuleAuthor => "exkludera";
 
     public static Plugin Instance = new();
-    public Dictionary<int, Building.BuilderData> BuilderData = new();
-    public bool buildMode = false;
 
     public override void Load(bool hotReload)
     {
@@ -27,7 +25,7 @@ public partial class Plugin : BasePlugin, IPluginConfig<Config>
             foreach (var player in Utilities.GetPlayers())
             {
                 if (Utils.HasPermission(player) || Files.Builders.steamids.Contains(player.SteamID.ToString()))
-                    BuilderData[player.Slot] = new Building.BuilderData { BlockType = Blocks.Models.Data.Platform.Title };
+                    Building.Builders[player.Slot] = new Building.BuilderData { BlockType = Blocks.Models.Data.Platform.Title };
             }
 
             Files.mapsFolder = Path.Combine(ModuleDirectory, "maps", Server.MapName);
@@ -54,6 +52,6 @@ public partial class Plugin : BasePlugin, IPluginConfig<Config>
         Config = config;
         Config.Settings.Prefix = StringExtensions.ReplaceColorTags(config.Settings.Prefix);
 
-        buildMode = config.Settings.Building.BuildMode.Enable;
+        Building.BuildMode = config.Settings.Building.BuildMode.Enable;
     }
 }

@@ -64,6 +64,7 @@ public class Config_Settings
     public class Settings_Teleports
     {
         public bool ForceAngles { get; set; } = false;
+        public bool AllowEntities { get; set; } = true;
         public float Velocity { get; set; } = 300;
 
         public class Settings_TeleportEntry

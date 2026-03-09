@@ -215,7 +215,7 @@ public partial class Blocks
 
         instance.AddTimer(duration, () =>
         {
-            block.CollisionRulesChanged(CollisionGroup.COLLISION_GROUP_DISSOLVING);
+            block.CollisionRulesChanged(CollisionGroup.COLLISION_GROUP_TRIGGER);
 
             var clr = Utils.GetColor(data.Color);
             int alpha = Utils.GetAlpha(data.Transparency);
@@ -615,17 +615,6 @@ public partial class Blocks
 
         BlockCooldownTimer(player, block);
     }
-
-    /*private static void Action_Water(CCSPlayerController player, Data data)
-    {
-        Server.NextFrame(() => { Server.PrintToChatAll("water"); });
-
-        var pawn = player.Pawn();
-        if (pawn == null) return;
-
-        var block = data.Entity;
-        var settings = data.Properties;
-    }*/
 
     public static void Test(CCSPlayerController player)
     {

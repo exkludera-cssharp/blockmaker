@@ -4,26 +4,23 @@ using CounterStrikeSharp.API.Modules.UserMessages;
 
 public static class Transmit
 {
-    private static Plugin Instance = Plugin.Instance;
-    private static Dictionary<int, Building.BuilderData> BuilderData = Instance.BuilderData;
-
     public static void Load()
     {
-        Instance.RegisterListener<Listeners.CheckTransmit>(CheckTransmit);
-        Instance.HookUserMessage(208, CMsgSosStartSoundEvent, HookMode.Pre);
+        Plugin.Instance.RegisterListener<Listeners.CheckTransmit>(CheckTransmit);
+        Plugin.Instance.HookUserMessage(208, CMsgSosStartSoundEvent, HookMode.Pre);
     }
 
     public static void Unload()
     {
-        Instance.RemoveListener<Listeners.CheckTransmit>(CheckTransmit);
-        Instance.UnhookUserMessage(208, CMsgSosStartSoundEvent, HookMode.Pre);
+        Plugin.Instance.RemoveListener<Listeners.CheckTransmit>(CheckTransmit);
+        Plugin.Instance.UnhookUserMessage(208, CMsgSosStartSoundEvent, HookMode.Pre);
     }
 
     private static void CheckTransmit(CCheckTransmitInfoList infoList)
     {
         foreach ((CCheckTransmitInfo info, CCSPlayerController? player) in infoList)
         {
-            if (player == null || !BuilderData.ContainsKey(player.Slot))
+            if (player == null || !Building.Builders.ContainsKey(player.Slot))
                 continue;
 
             foreach (var hidden in Blocks.HiddenPlayers)

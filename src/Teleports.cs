@@ -2,8 +2,8 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
-using Microsoft.Extensions.Logging;
 using FixVectorLeak;
+using Microsoft.Extensions.Logging;
 
 public static class Teleports
 {
@@ -56,7 +56,7 @@ public static class Teleports
 
     public static void Create(CCSPlayerController player)
     {
-        var BuilderData = Instance.BuilderData[player.Slot];
+        var BuilderData = Building.Builders[player.Slot];
         var playerPawn = player.PlayerPawn.Value!;
         var position = new Vector_t(playerPawn.AbsOrigin!.X, playerPawn.AbsOrigin.Y, playerPawn.AbsOrigin.Z + playerPawn.Collision.Maxs.Z / 2);
         var rotation = playerPawn.AbsRotation!.ToQAngle_t();
@@ -127,11 +127,12 @@ public static class Teleports
             teleport.DispatchSpawn();
             teleport.AcceptInput("DisableMotion");
 
-            teleport.CollisionRulesChanged(CollisionGroup.COLLISION_GROUP_WEAPON);
+            // cant grab teleport with trigger group :skull:
+            if (Building.BuildMode)
+                teleport.CollisionRulesChanged(CollisionGroup.COLLISION_GROUP_WEAPON); //weapons wont go through during buildmode
+            else teleport.CollisionRulesChanged(CollisionGroup.COLLISION_GROUP_TRIGGER);
 
-            CreateTrigger(teleport);
-
-            var teleportData = new Data(teleport, name);
+            Data teleportData = new(teleport, name);
 
             return teleportData;
         }
@@ -140,32 +141,6 @@ public static class Teleports
             Utils.Log("(CreateTeleport) Failed to create teleport");
             return null;
         }
-    }
-
-    private static void CreateTrigger(CBaseProp teleport)
-    {
-        var trigger = Utilities.CreateEntityByName<CTriggerMultiple>("trigger_multiple");
-
-        if (trigger != null && trigger.IsValid && trigger.Entity != null)
-        {
-            trigger.Spawnflags = 1;
-            trigger.Entity.Name = teleport.Entity!.Name + "_trigger";
-            trigger.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags &= ~(uint)(1 << 2);
-
-            trigger.Collision.SolidFlags = 0;
-            trigger.Collision.SolidType = SolidType_t.SOLID_VPHYSICS;
-
-            trigger.SetModel(teleport.CBodyComponent!.SceneNode!.GetSkeletonInstance().ModelState.ModelName);
-            trigger.Teleport(teleport.AbsOrigin, teleport.AbsRotation);
-            trigger.DispatchSpawn();
-            trigger.AcceptInput("SetParent", teleport, trigger, "!activator");
-
-            trigger.CollisionRulesChanged(CollisionGroup.COLLISION_GROUP_TRIGGER);
-
-            Blocks.Triggers.Add(trigger, teleport);
-        }
-
-        else Utils.Log("(CreateTrigger) Failed to create trigger");
     }
 
     public static void Delete(CCSPlayerController player)
@@ -181,7 +156,8 @@ public static class Teleports
 
         if (teleports != null)
         {
-            if (teleports.Entry == null || teleports.Exit == null)
+            if (teleports.Entry == null || teleports.Entry.Entity == null ||
+                teleports.Exit == null || teleports.Exit.Entity == null)
             {
                 Utils.PrintToChat(player, $"{ChatColors.Red}Could not delete unfinished teleport pair");
                 return;
@@ -189,29 +165,11 @@ public static class Teleports
 
             var entryEntity = teleports.Entry.Entity;
             if (entryEntity != null && entryEntity.IsValid)
-            {
                 entryEntity.Remove();
-
-                var entryTrigger = Blocks.Triggers.Where(kvp => kvp.Value == entryEntity).First().Key;
-                if (entryTrigger != null)
-                {
-                    entryTrigger.Remove();
-                    Blocks.Triggers.Remove(entryTrigger);
-                }
-            }
 
             var exitEntity = teleports.Exit.Entity;
             if (exitEntity != null && exitEntity.IsValid)
-            {
                 exitEntity.Remove();
-
-                var exitTrigger = Blocks.Triggers.Where(kvp => kvp.Value == exitEntity).First().Key;
-                if (exitTrigger != null)
-                {
-                    exitTrigger.Remove();
-                    Blocks.Triggers.Remove(exitTrigger);
-                }
-            }
 
             Entities.Remove(teleports);
 
@@ -221,5 +179,47 @@ public static class Teleports
             Utils.PrintToChat(player, $"Deleted teleport pair");
         }
         else Utils.PrintToChat(player, $"{ChatColors.Red}Could not find a teleport to delete");
+    }
+
+    public static void Action(Pair teleport, CBaseEntity caller, CBaseEntity activator)
+    {
+        if (teleport.Entry?.Entity == null || teleport.Exit?.Entity == null || caller?.Entity == null)
+            return;
+
+        if (!caller.Entity.Name?.Contains("Entry", StringComparison.OrdinalIgnoreCase) ?? true || activator.Entity.Name.Contains("blockmaker", StringComparison.OrdinalIgnoreCase))
+            return;
+
+        caller.EmitSound(Config.Sounds.Blocks.Teleport);
+
+        var exitEntity = teleport.Exit.Entity;
+        var exitPosition = exitEntity.AbsOrigin?.ToVector_t();
+        var exitVelocity = Config.Settings.Teleports.Velocity > 0
+            ? new Vector_t(activator.AbsVelocity.X, activator.AbsVelocity.Y, Config.Settings.Teleports.Velocity)
+            : activator.AbsVelocity.ToVector_t();
+
+        if (activator.DesignerName == "player")
+        {
+            var pawn = activator.As<CCSPlayerPawn>();
+            if (pawn == null || !pawn.IsValid) return;
+
+            var angles = Config.Settings.Teleports.ForceAngles
+                ? exitEntity.AbsRotation?.ToQAngle_t() ?? pawn.EyeAngles.ToQAngle_t()
+                : pawn.EyeAngles.ToQAngle_t();
+
+            pawn.Teleport(exitPosition, angles, exitVelocity);
+            exitEntity.EmitSound(Config.Sounds.Blocks.Teleport);
+        }
+        else
+        {
+            if (!Instance.Config.Settings.Teleports.AllowEntities)
+                return;
+
+            activator.Teleport(
+                exitPosition,
+                Config.Settings.Teleports.ForceAngles ? exitEntity.AbsRotation?.ToQAngle_t() : null,
+                exitVelocity
+            );
+            exitEntity.EmitSound(Config.Sounds.Blocks.Teleport);
+        }
     }
 }

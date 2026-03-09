@@ -6,14 +6,14 @@ public static class VectorUtils
 {
     public static (Vector_t position, QAngle_t rotation) GetEndXYZ(CCSPlayerController player, CBaseProp block, double distance = 250, bool grid = false, float gridValue = 0f, bool snapping = false, float snapValue = 0f)
     {
-        if (Blocks.Entities.TryGetValue(Building.PlayerHolds[player].Entity, out var locked))
+        if (Blocks.Entities.TryGetValue(Building.BuilderHolds[player].Entity, out var locked))
         {
             if (Blocks.Entities[locked.Entity].Properties.Locked)
             {
-                if (Building.PlayerHolds[player].LockedMessage == false)
+                if (Building.BuilderHolds[player].LockedMessage == false)
                     Utils.PrintToChat(player, $"{ChatColors.Red}Block is locked");
 
-                Building.PlayerHolds[player].LockedMessage = true;
+                Building.BuilderHolds[player].LockedMessage = true;
 
                 return (block.AbsOrigin!.ToVector_t(), block.AbsRotation!.ToQAngle_t());
             }
@@ -171,6 +171,20 @@ public static class VectorUtils
         return overlapX && overlapY && overlapZ;
     }
 
+    public static bool CheckOnTop(Blocks.Data block, CCSPlayerPawn pawn)
+    {
+        Vector_t playerMaxs = pawn.Collision.Maxs.ToVector_t() * 2;
+        Vector_t blockMaxs = block.Entity.Collision.Maxs.ToVector_t() * Utils.GetSize(block.Size) * 2;
+
+        Vector_t blockOrigin = block.Entity.AbsOrigin!.ToVector_t();
+        Vector_t pawnOrigin = pawn.AbsOrigin!.ToVector_t();
+        QAngle_t blockRotation = block.Entity.AbsRotation!.ToQAngle_t();
+
+        if (!IsTopOnly(blockOrigin, pawnOrigin, blockMaxs, playerMaxs, blockRotation))
+            return false;
+
+        return true;
+    }
     public static bool IsTopOnly(Vector_t entityPosition, Vector_t playerPosition, Vector_t entitySize, Vector_t playerSize, QAngle_t entityRotation)
     {
         Vector_t forward = new(
@@ -292,7 +306,7 @@ public static class VectorUtils
             Z = vector.Z;
         }
 
-        public Vector_t ToVector() => new (X, Y, Z);
+        public Vector_t ToVector() => new(X, Y, Z);
     }
 
     public class QAngleDTO
@@ -310,6 +324,6 @@ public static class VectorUtils
             Roll = qangle.Z;
         }
 
-        public QAngle_t ToQAngle() => new (Pitch, Yaw, Roll);
+        public QAngle_t ToQAngle() => new(Pitch, Yaw, Roll);
     }
 }

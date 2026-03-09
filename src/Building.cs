@@ -10,6 +10,8 @@ using System.Data;
 
 public static class Building
 {
+    public static bool BuildMode = false;
+
     public class BuilderData
     {
         public string BlockType = "Platform";
@@ -35,6 +37,7 @@ public static class Building
         public string ChatInput = "";
         public Dictionary<string, CBaseEntity> PropertyEntity = new();
     }
+    public static Dictionary<int, BuilderData> Builders = new();
 
     public class BuildData
     {
@@ -44,35 +47,34 @@ public static class Building
         public List<CBeam> Beams = new();
         public bool LockedMessage = false;
     }
+    public static Dictionary<CCSPlayerController, BuildData> BuilderHolds = new Dictionary<CCSPlayerController, BuildData>();
 
     private static Plugin Instance = Plugin.Instance;
     private static Config Config = Instance.Config;
 
-    public static Dictionary<CCSPlayerController, BuildData> PlayerHolds = new Dictionary<CCSPlayerController, BuildData>();
-
     public static void OnTick()
     {
-        if (!Instance.buildMode)
+        if (!BuildMode)
             return;
 
         foreach (var player in Utilities.GetPlayers().Where(p =>
             p.IsLegal() &&
             p.IsAlive() &&
-            Instance.BuilderData.ContainsKey(p.Slot))
+            Builders.ContainsKey(p.Slot))
         )
         {
-            if (!PlayerHolds.ContainsKey(player))
+            if (!BuilderHolds.ContainsKey(player))
             {
                 if (player.Buttons.HasFlag(PlayerButtons.Reload) || player.Buttons.HasFlag(PlayerButtons.Use))
                     GrabBlock(player);
             }
             else
             {
-                var playerHolds = PlayerHolds[player];
+                var playerHolds = BuilderHolds[player];
 
                 if (playerHolds.Entity == null || !playerHolds.Entity.IsValid)
                 {
-                    PlayerHolds.Remove(player);
+                    BuilderHolds.Remove(player);
                     continue;
                 }
 
@@ -102,7 +104,7 @@ public static class Building
                             beam.Remove();
                     }
 
-                    PlayerHolds.Remove(player);
+                    BuilderHolds.Remove(player);
 
                     if (Config.Sounds.Building.Enabled)
                         player.EmitSound(Config.Sounds.Building.Place);
@@ -119,7 +121,7 @@ public static class Building
         {
             bool block = Blocks.Entities.ContainsKey(entity);
             bool light = Lights.Entities.ContainsKey(entity);
-            var teleports = Teleports.Entities.FirstOrDefault(pair => pair.Entry.Entity == entity || pair.Exit.Entity == entity);
+            var teleports = Teleports.Entities.FirstOrDefault(pair => (pair.Entry?.Entity == entity) || (pair.Exit?.Entity == entity));
 
             if (!block && !light && teleports == null)
             {
@@ -156,15 +158,15 @@ public static class Building
                 Utilities.SetStateChanged(entity, "CBaseModelEntity", "m_clrRender");
             }
 
-            PlayerHolds.Add(player, new BuildData() { Entity = entity, Distance = distance });
+            BuilderHolds.Add(player, new BuildData() { Entity = entity, Distance = distance });
             return;
         }
     }
 
     private static void DistanceRepeat(CCSPlayerController player, CBaseProp block)
     {
-        var playerHolds = PlayerHolds[player];
-        var BuilderData = Instance.BuilderData[player.Slot];
+        var playerHolds = BuilderHolds[player];
+        var BuilderData = Builders[player.Slot];
 
         var (position, rotation) =
             VectorUtils.GetEndXYZ(
@@ -192,16 +194,16 @@ public static class Building
         {
             if (Blocks.Entities[locked.Entity].Properties.Locked)
             {
-                if (PlayerHolds[player].LockedMessage == false)
+                if (BuilderHolds[player].LockedMessage == false)
                     Utils.PrintToChat(player, $"{ChatColors.Red}Block is locked");
 
-                PlayerHolds[player].LockedMessage = true;
+                BuilderHolds[player].LockedMessage = true;
 
                 return;
             }
         }
 
-        var playerHolds = PlayerHolds[player];
+        var playerHolds = BuilderHolds[player];
 
         QAngle_t currentEyeAngle = player.Pawn()!.EyeAngles.ToQAngle_t();
 

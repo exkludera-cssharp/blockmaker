@@ -15,12 +15,12 @@ public static class Utils
 
     public static bool BuildMode(CCSPlayerController player)
     {
-        bool isBuilder = instance.BuilderData.TryGetValue(player.Slot, out var BuilderData);
+        bool isBuilder = Building.Builders.TryGetValue(player.Slot, out var BuilderData);
 
-        if (instance.buildMode && (isBuilder || HasPermission(player)))
+        if (Building.BuildMode && (isBuilder || HasPermission(player)))
             return true;
 
-        else if (!instance.buildMode && (isBuilder || HasPermission(player)))
+        else if (!Building.BuildMode && (isBuilder || HasPermission(player)))
         {
             PrintToChat(player, $"{ChatColors.Red}Build Mode is disabled");
             return false;
@@ -45,6 +45,17 @@ public static class Utils
                 return true;
         }
         return false;
+    }
+
+    public static bool CorrectTeam(CCSPlayerController player, string team)
+    {
+        team = (team ?? string.Empty).ToLower();
+        bool isTeamValid =
+            ((team == "t" || team == "terrorist") && player.Team == CsTeam.Terrorist) ||
+            ((team == "ct" || team == "counterterrorist") && player.Team == CsTeam.CounterTerrorist) ||
+            string.IsNullOrEmpty(team) || team == "both" || team == "all";
+
+        return isTeamValid;
     }
 
     public static void Log(string message)
@@ -140,16 +151,16 @@ public static class Utils
     {
         CBaseProp? closestBlock = null;
 
-        foreach (var prop in Utilities.GetAllEntities().Where(e => e.DesignerName.Contains("prop_physics_override") && e.Entity!.Name.StartsWith("blockmaker")))
+        foreach (var target in Utilities.GetAllEntities().Where(e => e.DesignerName.Contains("prop_physics_override") && e.Entity!.Name.StartsWith("blockmaker")))
         {
-            var currentProp = prop.As<CBaseProp>();
+            CBaseProp prop = target.As<CBaseProp>();
 
-            if (currentProp == excludeBlock)
+            if (prop == excludeBlock)
                 continue;
 
-            double distance = VectorUtils.CalculateDistance(endPos, currentProp.AbsOrigin!.ToVector_t());
+            double distance = VectorUtils.CalculateDistance(endPos, prop.AbsOrigin!.ToVector_t());
             if (distance < threshold)
-                closestBlock = currentProp;
+                closestBlock = prop;
         }
 
         return closestBlock;
@@ -306,7 +317,7 @@ public static class Utils
             new[] { corners[0], corners[4] }, new[] { corners[1], corners[5] }, new[] { corners[2], corners[6] }, new[] { corners[3], corners[7] }  // Sides
         };
 
-        var playerBeams = Building.PlayerHolds[player].Beams;
+        var playerBeams = Building.BuilderHolds[player].Beams;
 
         // Remove invalid or excess beams
         for (int i = playerBeams.Count - 1; i >= 0; i--)
@@ -401,7 +412,6 @@ public static class Utils
         }
 
         Blocks.Entities.Clear();
-        Blocks.Triggers.Clear();
 
         Teleports.Entities.Clear();
         Teleports.isNext.Clear();
@@ -415,6 +425,6 @@ public static class Utils
         Blocks.HiddenPlayers.Clear();
         Blocks.nuked = false;
 
-        Building.PlayerHolds.Clear();
+        Building.BuilderHolds.Clear();
     }
 }

@@ -1,12 +1,10 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Commands;
-using CounterStrikeSharp.API.Modules.Memory;
-using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
-using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 using FixVectorLeak;
+using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 public static class Events
 {
@@ -19,6 +17,7 @@ public static class Events
         Instance.RegisterListener<Listeners.OnMapStart>(OnMapStart);
         Instance.RegisterListener<Listeners.OnMapEnd>(OnMapEnd);
         Instance.RegisterListener<Listeners.OnServerPrecacheResources>(OnServerPrecacheResources);
+        Instance.RegisterListener<Listeners.OnPlayerTakeDamagePre>(OnPlayerTakeDamagePre);
 
         Instance.RegisterEventHandler<EventPlayerConnectFull>(EventPlayerConnectFull);
         Instance.RegisterEventHandler<EventRoundStart>(EventRoundStart);
@@ -28,12 +27,9 @@ public static class Events
         Instance.AddCommandListener("say", OnCommandSay, HookMode.Pre);
         Instance.AddCommandListener("say_team", OnCommandSay, HookMode.Pre);
 
-        Instance.HookEntityOutput("trigger_multiple", "OnStartTouch", trigger_multiple, HookMode.Pre);
-        Instance.HookEntityOutput("trigger_multiple", "OnTrigger", trigger_multiple, HookMode.Pre);
-
-        VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(OnTakeDamage, HookMode.Pre);
-
         Transmit.Load();
+
+        TouchHooks.Load();
     }
 
     public static void Deregister()
@@ -42,6 +38,7 @@ public static class Events
         Instance.RemoveListener<Listeners.OnMapStart>(OnMapStart);
         Instance.RemoveListener<Listeners.OnMapEnd>(OnMapEnd);
         Instance.RemoveListener<Listeners.OnServerPrecacheResources>(OnServerPrecacheResources);
+        Instance.RemoveListener<Listeners.OnPlayerTakeDamagePre>(OnPlayerTakeDamagePre);
 
         Instance.DeregisterEventHandler<EventPlayerConnectFull>(EventPlayerConnectFull);
         Instance.DeregisterEventHandler<EventRoundStart>(EventRoundStart);
@@ -51,12 +48,9 @@ public static class Events
         Instance.RemoveCommandListener("say", OnCommandSay, HookMode.Pre);
         Instance.RemoveCommandListener("say_team", OnCommandSay, HookMode.Pre);
 
-        Instance.UnhookEntityOutput("trigger_multiple", "OnStartTouch", trigger_multiple, HookMode.Pre);
-        Instance.UnhookEntityOutput("trigger_multiple", "OnTrigger", trigger_multiple, HookMode.Pre);
-
-        VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Unhook(OnTakeDamage, HookMode.Pre);
-
         Transmit.Unload();
+
+        TouchHooks.Unload();
     }
 
     public static Timer? AutoSaveTimer;
@@ -68,8 +62,12 @@ public static class Events
         if (Config.Settings.Building.AutoSave.Enable)
         {
             AutoSaveTimer?.Kill();
-            AutoSaveTimer = Instance.AddTimer(Config.Settings.Building.AutoSave.Timer, () => {
-                if (!Instance.buildMode) return;
+
+            AutoSaveTimer = Instance.AddTimer(Config.Settings.Building.AutoSave.Timer, () =>
+            {
+                if (!Building.BuildMode)
+                    return;
+
                 Files.EntitiesData.Save(true);
             }, TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
         }
@@ -128,12 +126,12 @@ public static class Events
         if (player == null || player.NotValid())
             return HookResult.Continue;
 
-        if (Instance.buildMode)
+        if (Building.BuildMode)
         {
             Files.Builders.Load();
 
             if (Utils.HasPermission(player) || Files.Builders.steamids.Contains(player.SteamID.ToString()))
-                Instance.BuilderData[player.Slot] = new Building.BuilderData { BlockType = Blocks.Models.Data.Platform.Title };
+                Building.Builders[player.Slot] = new Building.BuilderData { BlockType = Blocks.Models.Data.Platform.Title };
         }
 
         return HookResult.Continue;
@@ -149,7 +147,7 @@ public static class Events
 
     private static HookResult EventRoundEnd(EventRoundEnd @event, GameEventInfo info)
     {
-        if (Instance.buildMode && Config.Settings.Building.AutoSave.Enable)
+        if (Building.BuildMode && Config.Settings.Building.AutoSave.Enable)
             Files.EntitiesData.Save();
 
         return HookResult.Continue;
@@ -184,9 +182,8 @@ public static class Events
         if (player == null || player.NotValid())
             return HookResult.Continue;
 
-        if (Instance.BuilderData.ContainsKey(player.Slot))
+        if (Building.Builders.TryGetValue(player.Slot, out var pData))
         {
-            var pData = Instance.BuilderData[player.Slot];
             var type = pData.ChatInput;
 
             if (!string.IsNullOrEmpty(type))
@@ -238,93 +235,8 @@ public static class Events
         return HookResult.Continue;
     }
 
-    private static HookResult trigger_multiple(CEntityIOOutput output, string name, CEntityInstance activator, CEntityInstance caller, CVariant value, float delay)
+    private static HookResult OnPlayerTakeDamagePre(CCSPlayerPawn pawn, CTakeDamageInfo info)
     {
-        if (caller.DesignerName != "trigger_multiple")
-            return HookResult.Continue;
-
-        if (Blocks.Triggers.TryGetValue(caller.As<CTriggerMultiple>(), out CBaseProp? block))
-        {
-            if (activator.DesignerName != "player")
-                return HookResult.Continue;
-
-            var pawn = activator.As<CCSPlayerPawn>();
-            if (pawn == null || !pawn.IsValid)
-                return HookResult.Continue;
-
-            var player = pawn.OriginalController?.Value?.As<CCSPlayerController>();
-            if (player == null || player.IsBot)
-                return HookResult.Continue;
-
-            if (Instance.buildMode)
-            {
-                foreach (var kvp in Building.PlayerHolds)
-                    if (kvp.Value.Entity == block)
-                        return HookResult.Continue;
-            }
-
-            if (player.PlayerPawn.Value?.LifeState != (byte)LifeState_t.LIFE_ALIVE)
-                return HookResult.Continue;
-
-            var teleport = Teleports.Entities.Where(pair => pair.Entry.Entity == block || pair.Exit.Entity == block).FirstOrDefault();
-
-            if (teleport != null)
-            {
-                if (teleport.Entry == null || teleport.Exit == null)
-                    return HookResult.Continue;
-
-                if (block.Entity!.Name.Contains("Entry"))
-                {
-                    pawn.Teleport(
-                        teleport.Exit.Entity.AbsOrigin?.ToVector_t(),
-
-                        Config.Settings.Teleports.ForceAngles
-                        ? teleport.Exit.Entity.AbsRotation?.ToQAngle_t()
-                        : pawn.EyeAngles.ToQAngle_t(),
-
-                        Config.Settings.Teleports.Velocity > 0
-                        ? new Vector_t(pawn.AbsVelocity.X, pawn.AbsVelocity.Y, Config.Settings.Teleports.Velocity)
-                        : pawn.AbsVelocity.ToVector_t()
-                    );
-
-                    pawn.EmitSound(Config.Sounds.Blocks.Teleport);
-                }
-
-                return HookResult.Continue;
-            }
-
-            var Data = Blocks.Entities[block];
-
-            if (Data.Properties.OnTop)
-            {
-                Vector_t playerMaxs = pawn.Collision.Maxs.ToVector_t() * 2;
-                Vector_t blockMaxs = block.Collision.Maxs.ToVector_t() * Utils.GetSize(Data.Size) * 2;
-
-                Vector_t blockOrigin = block.AbsOrigin!.ToVector_t();
-                Vector_t pawnOrigin = pawn.AbsOrigin!.ToVector_t();
-                QAngle_t blockRotation = block.AbsRotation!.ToQAngle_t();
-
-                if (!VectorUtils.IsTopOnly(blockOrigin, pawnOrigin, blockMaxs, playerMaxs, blockRotation))
-                    return HookResult.Continue;
-            }
-
-            if (Data.Team == "T" && player.Team == CsTeam.Terrorist ||
-                Data.Team == "CT" && player.Team == CsTeam.CounterTerrorist ||
-                Data.Team == "Both" || string.IsNullOrEmpty(Data.Team)
-            )
-            {
-                Blocks.Actions(player, block);
-            }
-        }
-
-        return HookResult.Continue;
-    }
-
-    private static HookResult OnTakeDamage(DynamicHook hook)
-    {
-        var pawn = hook.GetParam<CCSPlayerPawn>(0);
-        var info = hook.GetParam<CTakeDamageInfo>(1);
-
         if (pawn.DesignerName == "player" && info.Attacker.Value?.DesignerName == "player")
             return HookResult.Continue;
 

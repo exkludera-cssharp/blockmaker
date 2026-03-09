@@ -10,7 +10,7 @@ public partial class Blocks
     {
         var entity = player.GetBlockAim();
 
-        float value = rotate ? instance.BuilderData[player.Slot].RotationValue : instance.BuilderData[player.Slot].PositionValue;
+        float value = rotate ? Building.Builders[player.Slot].RotationValue : Building.Builders[player.Slot].PositionValue;
 
         if (entity == null)
         {
@@ -110,14 +110,7 @@ public partial class Blocks
             block.Entity.Remove();
             Entities.Remove(block.Entity);
 
-            var trigger = Triggers.FirstOrDefault(kvp => kvp.Value == block.Entity).Key;
-            if (trigger != null)
-            {
-                trigger.Remove();
-                Triggers.Remove(trigger);
-            }
-
-            var BuilderData = instance.BuilderData[player.Slot];
+            var BuilderData = Building.Builders[player.Slot];
 
             CreateBlock(player, BuilderData.BlockType, BuilderData.BlockPole, BuilderData.BlockSize, entity.AbsOrigin!.ToVector_t(), entity.AbsRotation!.ToQAngle_t(), BuilderData.BlockColor, BuilderData.BlockTransparency, BuilderData.BlockTeam, BuilderData.BlockEffect?.Particle ?? "");
 
@@ -149,7 +142,7 @@ public partial class Blocks
             if (Utils.BlockLocked(player, block))
                 return;
 
-            var BuilderData = instance.BuilderData[player.Slot];
+            var BuilderData = Building.Builders[player.Slot];
 
             CreateBlock(player, block.Type, block.Pole, block.Size, entity.AbsOrigin!.ToVector_t(), entity.AbsRotation!.ToQAngle_t(), block.Color, block.Transparency, block.Team, block.Effect, block.Properties);
 
@@ -231,7 +224,7 @@ public partial class Blocks
             if (Utils.BlockLocked(player, block))
                 return;
 
-            var color = instance.BuilderData[player.Slot].BlockColor;
+            var color = Building.Builders[player.Slot].BlockColor;
 
             var clr = Utils.GetColor(color);
             int alpha = Utils.GetAlpha(block.Transparency);
@@ -246,7 +239,7 @@ public partial class Blocks
 
     public static void ChangeProperties(CCSPlayerController player, string type, string input)
     {
-        var BuilderData = instance.BuilderData[player.Slot];
+        var BuilderData = Building.Builders[player.Slot];
 
         if (!BuilderData.PropertyEntity.TryGetValue(type, out var entity) || entity == null)
         {
@@ -347,19 +340,12 @@ public partial class Blocks
             if (Utils.BlockLocked(player, block))
                 return;
 
-            var BuilderData = instance.BuilderData[player.Slot];
+            var BuilderData = Building.Builders[player.Slot];
             Effect effect = BuilderData.BlockEffect;
             Entities[entity].Effect = effect.Particle;
 
             block.Entity.Remove();
             Entities.Remove(block.Entity);
-
-            var trigger = Triggers.FirstOrDefault(kvp => kvp.Value == block.Entity).Key;
-            if (trigger != null)
-            {
-                trigger.Remove();
-                Triggers.Remove(trigger);
-            }
 
             CreateBlock(player, block.Type, block.Pole, block.Size, entity.AbsOrigin!.ToVector_t(), entity.AbsRotation!.ToQAngle_t(), block.Color, block.Transparency, block.Team, BuilderData.BlockEffect?.Particle ?? "");
 

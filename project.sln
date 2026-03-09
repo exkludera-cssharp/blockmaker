@@ -1,9 +1,23 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.5.002.0
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11520.95 d18.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlockMaker", "src\BlockMaker.csproj", "{29B25BB5-57C4-465F-B422-0AE5FFC8B151}"
+EndProject
+Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "GitHubDesktop", "..\..\..\..\..\Users\user\AppData\Local\GitHubDesktop\GitHubDesktop.exe", "{FF7CF5EA-53A9-688C-F1C0-A8E3EDAD51E1}"
+	ProjectSection(DebuggerProjectSystem) = preProject
+		PortSupplier = 00000000-0000-0000-0000-000000000000
+		Executable = C:\Users\user\AppData\Local\GitHubDesktop\GitHubDesktop.exe
+		RemoteMachine = DESKTOP-MVFNHMK
+		StartingDirectory = C:\Users\user\AppData\Local\GitHubDesktop
+		Environment = Default
+		LaunchingEngine = 00000000-0000-0000-0000-000000000000
+		UseLegacyDebugEngines = No
+		LaunchSQLEngine = No
+		AttachLaunchAction = No
+		IORedirection = Auto
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +29,8 @@ Global
 		{29B25BB5-57C4-465F-B422-0AE5FFC8B151}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{29B25BB5-57C4-465F-B422-0AE5FFC8B151}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{29B25BB5-57C4-465F-B422-0AE5FFC8B151}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF7CF5EA-53A9-688C-F1C0-A8E3EDAD51E1}.Debug|Any CPU.ActiveCfg = Release|x86
+		{FF7CF5EA-53A9-688C-F1C0-A8E3EDAD51E1}.Release|Any CPU.ActiveCfg = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

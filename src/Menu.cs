@@ -53,7 +53,7 @@ public partial class Menu
 
     static void Menu_Commands(CCSPlayerController player, string menuType, IMenu Parent)
     {
-        var BuilderData = Instance.BuilderData[player.Slot];
+        var BuilderData = Building.Builders[player.Slot];
 
         IMenu Menu = Create("Block Menu", menuType, Parent);
 
@@ -111,7 +111,7 @@ public partial class Menu
 
     static void PositionMenuOptions(CCSPlayerController player, string menuType, IMenu Parent, string[] options, bool rotate)
     {
-        var BuilderData = Instance.BuilderData[player.Slot];
+        var BuilderData = Building.Builders[player.Slot];
 
         float value = rotate ? BuilderData.RotationValue : BuilderData.PositionValue;
         string title = $"{(rotate ? "Rotate" : "Move")} Block ({value} Units)";
@@ -144,7 +144,7 @@ public partial class Menu
     
     static void Menu_BlockSettings(CCSPlayerController player, string menuType, IMenu Parent)
     {
-        var BuilderData = Instance.BuilderData[player.Slot];
+        var BuilderData = Building.Builders[player.Slot];
 
         IMenu Menu = Create("Block Settings", menuType, Parent);
 
@@ -218,7 +218,7 @@ public partial class Menu
 
     static void TypeMenuOptions(CCSPlayerController player, string menuType, IMenu Parent)
     {
-        var BuilderData = Instance.BuilderData[player.Slot];
+        var BuilderData = Building.Builders[player.Slot];
 
         IMenu Menu = Create($"Select Type ({BuilderData.BlockType})", menuType, Parent);
 
@@ -252,7 +252,7 @@ public partial class Menu
 
     static void GunTypeMenu(CCSPlayerController player, string menuType, IMenu Parent, string gunType)
     {
-        var BuilderData = Instance.BuilderData[player.Slot];
+        var BuilderData = Building.Builders[player.Slot];
 
         IMenu Menu = Create($"Select {gunType}", menuType, Parent);
 
@@ -290,7 +290,7 @@ public partial class Menu
 
     static void TransparencyMenuOptions(CCSPlayerController player, string menuType, IMenu Parent)
     {
-        var BuilderData = Instance.BuilderData[player.Slot];
+        var BuilderData = Building.Builders[player.Slot];
 
         IMenu Menu = Create($"Select Transparency ({BuilderData.BlockTransparency})", menuType, Parent);
 
@@ -313,7 +313,7 @@ public partial class Menu
 
     static void EffectMenuOptions(CCSPlayerController player, string menuType, IMenu Parent)
     {
-        var BuilderData = Instance.BuilderData[player.Slot];
+        var BuilderData = Building.Builders[player.Slot];
 
         IMenu Menu = Create($"Select Effect ({BuilderData.BlockEffect.Title})", menuType, Parent);
 
@@ -347,7 +347,7 @@ public partial class Menu
 
     static void ColorMenuOptions(CCSPlayerController player, string menuType, IMenu Parent)
     {
-        var BuilderData = Instance.BuilderData[player.Slot];
+        var BuilderData = Building.Builders[player.Slot];
 
         IMenu Menu = Create($"Select Color ({BuilderData.BlockColor})", menuType, Parent);
 
@@ -366,7 +366,7 @@ public partial class Menu
 
     static void PropertiesMenuOptions(CCSPlayerController player, string menuType, IMenu Parent, CBaseEntity entity)
     {
-        var BuilderData = Instance.BuilderData[player.Slot];
+        var BuilderData = Building.Builders[player.Slot];
 
         if (Blocks.Entities.TryGetValue(entity, out var block))
         {
@@ -405,7 +405,7 @@ public partial class Menu
 
     static void PropertyMenuOption(IMenu Menu, string menuType, IMenu Parent, string property, float value, CCSPlayerController player, CBaseEntity entity)
     {
-        var BuilderData = Instance.BuilderData[player.Slot];
+        var BuilderData = Building.Builders[player.Slot];
 
         if (value != 0)
         {
@@ -445,7 +445,7 @@ public partial class Menu
 
     static void Menu_Teleports(CCSPlayerController player, string menuType, IMenu Parent)
     {
-        var BuilderData = Instance.BuilderData[player.Slot];
+        var BuilderData = Building.Builders[player.Slot];
 
         IMenu Menu = Create("Teleports Menu", menuType, Parent);
 
@@ -471,7 +471,7 @@ public partial class Menu
 
     static void Menu_Lights(CCSPlayerController player, string menuType, IMenu Parent)
     {
-        var BuilderData = Instance.BuilderData[player.Slot];
+        var BuilderData = Building.Builders[player.Slot];
 
         IMenu Menu = Create("Lights Menu", menuType, Parent);
 
@@ -551,11 +551,11 @@ public partial class Menu
 
     static void Menu_BuildSettings(CCSPlayerController player, string menuType, IMenu Parent)
     {
-        var BuilderData = Instance.BuilderData[player.Slot];
+        var BuilderData = Building.Builders[player.Slot];
 
         IMenu Menu = Create($"Build Settings", menuType, Parent);
 
-        Menu.AddItem("Build Mode: " + (Instance.buildMode ? "ON" : "OFF"), (player, option) =>
+        Menu.AddItem("Build Mode: " + (Building.BuildMode ? "ON" : "OFF"), (player, option) =>
         {
             Commands.BuildMode(player);
 
@@ -640,7 +640,7 @@ public partial class Menu
 
     static void GridMenuOptions(CCSPlayerController player, string menuType, IMenu Parent)
     {
-        var BuilderData = Instance.BuilderData[player.Slot];
+        var BuilderData = Building.Builders[player.Slot];
 
         IMenu Menu = Create($"Grid Options ({BuilderData.GridValue} Units)", menuType, Parent);
 
@@ -664,7 +664,7 @@ public partial class Menu
 
     static void SnapMenuOptions(CCSPlayerController player, string menuType, IMenu Parent)
     {
-        var BuilderData = Instance.BuilderData[player.Slot];
+        var BuilderData = Building.Builders[player.Slot];
 
         IMenu Menu = Create($"Snap Options ({BuilderData.SnapValue} Units)", menuType, Parent);
 
