@@ -1,10 +1,7 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
-using CS2TraceRay.Class;
-using CS2TraceRay.Enum;
-using CS2TraceRay.Struct;
-using FixVectorLeak;
+using RayTraceAPI;
 using System.Drawing;
 
 public partial class Lights
@@ -61,14 +58,24 @@ public partial class Lights
     {
         var BuilderData = Building.Builders[player.Slot];
 
-        CGameTrace? trace = TraceRay.TraceShape(player.GetEyePosition()!, player.PlayerPawn.Value?.EyeAngles!, TraceMask.MaskShot, player);
-        if (trace == null || !trace.HasValue || trace.Value.Position.Length() == 0)
+        var pawn = player.Pawn();
+        if (pawn == null) return;
+
+        var rayTrace = Plugin.RayTraceInterface.Get();
+        if (rayTrace == null) return;
+
+        TraceOptions options = new();
+
+        Vector? eyePosition = new(pawn.AbsOrigin!.X, pawn.AbsOrigin.Y, pawn.AbsOrigin.Z + pawn.ViewOffset.Z);
+        if (eyePosition == null) return;
+
+        if (rayTrace.TraceShape(eyePosition, pawn.EyeAngles, pawn, options, out TraceResult result) && !result.DidHit)
         {
             Utils.PrintToChat(player, $"{ChatColors.Red}Could not find a valid location to create light");
             return;
         }
 
-        var endPos = trace.Value.Position;
+        var endPos = result.EndPos;
 
         CreateEntity(BuilderData.LightColor, BuilderData.LightStyle, BuilderData.LightBrightness, BuilderData.LightDistance, new(endPos.X, endPos.Y, endPos.Z), null);
         Utils.PrintToChat(player, $"Created Light -" +
@@ -79,7 +86,7 @@ public partial class Lights
         );
     }
 
-    public static void CreateEntity(string color = "White", string style = "None", string brightness = "5", string distance = "1000", Vector_t? position = null, QAngle_t? rotation = null)
+    public static void CreateEntity(string color = "White", string style = "None", string brightness = "5", string distance = "1000", Vector? position = null, QAngle? rotation = null)
     {
         var light = Utilities.CreateEntityByName<COmniLight>("light_omni2");
         if (light != null && light.IsValid && light.Entity != null)
@@ -129,7 +136,7 @@ public partial class Lights
         if (entity != null && Entities.TryGetValue(entity, out var light))
         {
             if (replace)
-                CreateEntity(BuilderData.LightColor, BuilderData.LightStyle, BuilderData.LightBrightness, BuilderData.LightDistance, entity.AbsOrigin?.ToVector_t(), entity.AbsRotation?.ToQAngle_t());
+                CreateEntity(BuilderData.LightColor, BuilderData.LightStyle, BuilderData.LightBrightness, BuilderData.LightDistance, entity.AbsOrigin, entity.AbsRotation);
 
             light.Entity.Remove();
             Entities.Remove(entity);

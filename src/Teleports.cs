@@ -2,7 +2,6 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
-using FixVectorLeak;
 using Microsoft.Extensions.Logging;
 
 public static class Teleports
@@ -58,8 +57,8 @@ public static class Teleports
     {
         var BuilderData = Building.Builders[player.Slot];
         var playerPawn = player.PlayerPawn.Value!;
-        var position = new Vector_t(playerPawn.AbsOrigin!.X, playerPawn.AbsOrigin.Y, playerPawn.AbsOrigin.Z + playerPawn.Collision.Maxs.Z / 2);
-        var rotation = playerPawn.AbsRotation!.ToQAngle_t();
+        var position = new Vector(playerPawn.AbsOrigin!.X, playerPawn.AbsOrigin.Y, playerPawn.AbsOrigin.Z + playerPawn.Collision.Maxs.Z / 2);
+        var rotation = playerPawn.AbsRotation!;
 
         if (!isNext.ContainsKey(player))
             isNext.Add(player, false);
@@ -101,7 +100,7 @@ public static class Teleports
         }
     }
 
-    public static Data? CreateEntity(Vector_t position, QAngle_t rotation, string name)
+    public static Data? CreateEntity(Vector position, QAngle rotation, string name)
     {
         var teleport = Utilities.CreateEntityByName<CPhysicsPropOverride>("prop_physics_override");
 
@@ -192,10 +191,10 @@ public static class Teleports
         caller.EmitSound(Config.Sounds.Blocks.Teleport);
 
         var exitEntity = teleport.Exit.Entity;
-        var exitPosition = exitEntity.AbsOrigin?.ToVector_t();
+        var exitPosition = exitEntity.AbsOrigin;
         var exitVelocity = Config.Settings.Teleports.Velocity > 0
-            ? new Vector_t(activator.AbsVelocity.X, activator.AbsVelocity.Y, Config.Settings.Teleports.Velocity)
-            : activator.AbsVelocity.ToVector_t();
+            ? new Vector(activator.AbsVelocity.X, activator.AbsVelocity.Y, Config.Settings.Teleports.Velocity)
+            : activator.AbsVelocity;
 
         if (activator.DesignerName == "player")
         {
@@ -203,8 +202,8 @@ public static class Teleports
             if (pawn == null || !pawn.IsValid) return;
 
             var angles = Config.Settings.Teleports.ForceAngles
-                ? exitEntity.AbsRotation?.ToQAngle_t() ?? pawn.EyeAngles.ToQAngle_t()
-                : pawn.EyeAngles.ToQAngle_t();
+                ? exitEntity.AbsRotation ?? pawn.EyeAngles
+                : pawn.EyeAngles;
 
             pawn.Teleport(exitPosition, angles, exitVelocity);
             exitEntity.EmitSound(Config.Sounds.Blocks.Teleport);
@@ -216,7 +215,7 @@ public static class Teleports
 
             activator.Teleport(
                 exitPosition,
-                Config.Settings.Teleports.ForceAngles ? exitEntity.AbsRotation?.ToQAngle_t() : null,
+                Config.Settings.Teleports.ForceAngles ? exitEntity.AbsRotation : null,
                 exitVelocity
             );
             exitEntity.EmitSound(Config.Sounds.Blocks.Teleport);

@@ -1,14 +1,18 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Capabilities;
 using CounterStrikeSharp.API.Core.Translations;
+using RayTraceAPI;
 
 public partial class Plugin : BasePlugin, IPluginConfig<Config>
 {
     public override string ModuleName => "Block Maker";
-    public override string ModuleVersion => "0.2.5";
+    public override string ModuleVersion => "0.2.6";
     public override string ModuleAuthor => "exkludera";
 
     public static Plugin Instance = new();
+
+    public static PluginCapability<CRayTraceInterface> RayTraceInterface { get; } = new("raytrace:craytraceinterface");
 
     public override void Load(bool hotReload)
     {

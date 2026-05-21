@@ -11,7 +11,7 @@ public static class EntityExtends
 {
     public static bool NotValid(this CCSPlayerController? player)
     {
-        return player == null || !player.IsValid || !player.PlayerPawn.IsValid || player.Connected != PlayerConnectedState.PlayerConnected || player.IsBot || player.IsHLTV;
+        return player == null || !player.IsValid || !player.PlayerPawn.IsValid || player.Connected != PlayerConnectedState.Connected || player.IsBot || player.IsHLTV;
     }
 
     public static bool IsPlayer(this CCSPlayerController? player)

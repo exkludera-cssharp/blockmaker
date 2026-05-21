@@ -3,7 +3,6 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
-using FixVectorLeak;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 
 public static class Events
@@ -251,16 +250,16 @@ public static class Events
             if (pawn.AbsOrigin == null || block.AbsOrigin == null)
                 return HookResult.Continue;
 
-            Vector_t playerMaxs = pawn.Collision.Maxs.ToVector_t() * 2;
-            Vector_t blockMaxs = block.Collision!.Maxs.ToVector_t() * Utils.GetSize(blocktarget.Value.Size) * 2;
+            Vector playerMaxs = pawn.Collision.Maxs * 2;
+            Vector blockMaxs = block.Collision!.Maxs * Utils.GetSize(blocktarget.Value.Size) * 2;
 
-            if (VectorUtils.IsWithinBounds(block.AbsOrigin.ToVector_t(), pawn.AbsOrigin.ToVector_t(), blockMaxs, playerMaxs))
+            if (VectorUtils.IsWithinBounds(block.AbsOrigin, pawn.AbsOrigin, blockMaxs, playerMaxs))
             {
                 if (blocktarget.Value.Properties.OnTop)
                 {
-                    Vector_t blockOrigin = block.AbsOrigin!.ToVector_t();
-                    Vector_t pawnOrigin = pawn.AbsOrigin!.ToVector_t();
-                    QAngle_t blockRotation = block.AbsRotation!.ToQAngle_t();
+                    Vector blockOrigin = block.AbsOrigin!;
+                    Vector pawnOrigin = pawn.AbsOrigin!;
+                    QAngle blockRotation = block.AbsRotation!;
 
                     if (VectorUtils.IsTopOnly(blockOrigin, pawnOrigin, blockMaxs, playerMaxs, blockRotation))
                         return HookResult.Handled;

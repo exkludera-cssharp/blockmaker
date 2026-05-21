@@ -2,10 +2,7 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Extensions;
 using CounterStrikeSharp.API.Modules.Utils;
-using CS2TraceRay.Class;
-using CS2TraceRay.Enum;
-using CS2TraceRay.Struct;
-using FixVectorLeak;
+using RayTraceAPI;
 using System.Drawing;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -66,14 +63,24 @@ public partial class Blocks
 
     public static void Create(CCSPlayerController player)
     {
-        CGameTrace? trace = TraceRay.TraceShape(player.GetEyePosition()!, player.PlayerPawn.Value?.EyeAngles!, TraceMask.MaskShot, player);
-        if (trace == null || !trace.HasValue || trace.Value.Position.Length() == 0)
+        var rayTrace = Plugin.RayTraceInterface.Get();
+        if (rayTrace == null) return;
+
+        TraceOptions options = new();
+
+        var pawn = player.PlayerPawn.Value!;
+        if (pawn == null || pawn.EyeAngles == null) return;
+
+        Vector? eyePosition = new(pawn.AbsOrigin!.X, pawn.AbsOrigin.Y, pawn.AbsOrigin.Z + pawn.ViewOffset.Z);
+        if (eyePosition == null) return;
+
+        if (rayTrace.TraceShape(eyePosition, pawn.EyeAngles, pawn, options, out TraceResult result) && !result.DidHit)
         {
             Utils.PrintToChat(player, $"{ChatColors.Red}Could not find a valid location to create block");
             return;
         }
 
-        var endPos = trace.Value.Position;
+        var endPos = result.EndPos;
         var BuilderData = Building.Builders[player.Slot];
 
         try
@@ -115,8 +122,8 @@ public partial class Blocks
         string type,
         bool pole,
         string size,
-        Vector_t position,
-        QAngle_t rotation,
+        Vector position,
+        QAngle rotation,
         string color = "None",
         string transparency = "100%",
         string team = "Both",
@@ -133,11 +140,6 @@ public partial class Blocks
             block.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags &= ~(uint)(1 << 2);
             block.ShadowStrength = config.Settings.Blocks.DisableShadows ? 0.0f : 1.0f;
 
-            var clr = Utils.GetColor(color);
-            int alpha = Utils.GetAlpha(transparency);
-            block.Render = Color.FromArgb(alpha, clr.R, clr.G, clr.B);
-            Utilities.SetStateChanged(block, "CBaseModelEntity", "m_clrRender");
-
             string model = Utils.GetModelFromSelectedBlock(type, pole);
             block.SetModel(model);
 
@@ -145,6 +147,11 @@ public partial class Blocks
             block.DispatchSpawn();
             block.AcceptInput("SetScale", block, block, Utils.GetSize(size).ToString());
             block.AcceptInput("DisableMotion");
+
+            var clr = Utils.GetColor(color);
+            int alpha = Utils.GetAlpha(transparency);
+            block.Render = Color.FromArgb(alpha, clr.R, clr.G, clr.B);
+            Utilities.SetStateChanged(block, "CBaseModelEntity", "m_clrRender");
 
             if (!string.IsNullOrEmpty(effect) && effect != "None")
                 CreateParticle(block, effect, size);

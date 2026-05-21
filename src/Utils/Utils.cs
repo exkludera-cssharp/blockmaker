@@ -3,7 +3,6 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Utils;
-using FixVectorLeak;
 using Microsoft.Extensions.Logging;
 using System.Drawing;
 using System.Text.Json;
@@ -147,7 +146,7 @@ public static class Utils
         return null;
     }
 
-    public static CBaseProp? GetClosestBlock(Vector_t endPos, CBaseProp excludeBlock, double threshold)
+    public static CBaseProp? GetClosestBlock(Vector endPos, CBaseProp excludeBlock, double threshold)
     {
         CBaseProp? closestBlock = null;
 
@@ -158,7 +157,7 @@ public static class Utils
             if (prop == excludeBlock)
                 continue;
 
-            double distance = VectorUtils.CalculateDistance(endPos, prop.AbsOrigin!.ToVector_t());
+            double distance = VectorUtils.CalculateDistance(endPos, prop.AbsOrigin!);
             if (distance < threshold)
                 closestBlock = prop;
         }
@@ -247,7 +246,7 @@ public static class Utils
         return blockSize?.Size ?? config.Settings.Blocks.Sizes.First(bs => bs.Size == 1.0f).Size;
     }
 
-    public static CBeam DrawBeam(Vector_t startPos, Vector_t endPos, Color color, float width = 0.25f)
+    public static CBeam DrawBeam(Vector startPos, Vector endPos, Color color, float width = 0.25f)
     {
         var beam = Utilities.CreateEntityByName<CBeam>("beam")!;
 
@@ -267,27 +266,27 @@ public static class Utils
 
     public static void DrawBeamsAroundBlock(CCSPlayerController player, CBaseEntity block, Color color)
     {
-        Vector_t pos = block.AbsOrigin!.ToVector_t();
-        QAngle_t rotation = block.AbsRotation!.ToQAngle_t();
+        Vector pos = block.AbsOrigin!;
+        QAngle rotation = block.AbsRotation!;
 
         float scale = Blocks.Entities.ContainsKey(block) ? Utils.GetSize(Blocks.Entities[block].Size) : 1;
 
         var max = block.Collision!.Maxs * scale;
         var min = block.Collision!.Mins * scale;
 
-        Vector_t forward = new(
+        Vector forward = new(
             (float)Math.Cos(rotation.Y * Math.PI / 180) * (float)Math.Cos(rotation.X * Math.PI / 180),
             (float)Math.Sin(rotation.Y * Math.PI / 180) * (float)Math.Cos(rotation.X * Math.PI / 180),
             (float)-Math.Sin(rotation.X * Math.PI / 180)
         );
-        Vector_t right = new(
+        Vector right = new(
             (float)Math.Cos((rotation.Y + 90) * Math.PI / 180),
             (float)Math.Sin((rotation.Y + 90) * Math.PI / 180),
             0
         );
-        Vector_t up = VectorUtils.Cross(forward, right);
+        Vector up = VectorUtils.Cross(forward, right);
 
-        Vector_t[] localCorners =
+        Vector[] localCorners =
         {
             new(min.X, min.Y, min.Z), // Bottom-back-left
             new(max.X, min.Y, min.Z), // Bottom-back-right
@@ -299,10 +298,10 @@ public static class Utils
             new(min.X, max.Y, max.Z)  // Top-front-left
         };
 
-        Vector_t[] corners = new Vector_t[8];
+        Vector[] corners = new Vector[8];
         for (int i = 0; i < localCorners.Length; i++)
         {
-            Vector_t localCorner = localCorners[i];
+            Vector localCorner = localCorners[i];
             corners[i] =
                 pos +
                 forward * localCorner.X +
@@ -310,7 +309,7 @@ public static class Utils
                 up * localCorner.Z;
         }
 
-        var beams = new List<Vector_t[]>
+        var beams = new List<Vector[]>
         {
             new[] { corners[0], corners[1] }, new[] { corners[1], corners[2] }, new[] { corners[2], corners[3] }, new[] { corners[3], corners[0] }, // Bottom
             new[] { corners[4], corners[5] }, new[] { corners[5], corners[6] }, new[] { corners[6], corners[7] }, new[] { corners[7], corners[4] }, // Top

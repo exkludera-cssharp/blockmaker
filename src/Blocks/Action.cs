@@ -3,7 +3,6 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
-using FixVectorLeak;
 using System.Drawing;
 
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
@@ -63,7 +62,7 @@ public partial class Blocks
             if (!CooldownsTimers.ContainsKey(player.Slot))
                 CooldownsTimers[player.Slot] = new();
 
-            if (BlockCooldown(player, block.Entity) || TempTimers.Contains(block.Entity))
+            if (BlockCooldown(player, block.Entity) || TempTimers.Contains(block))
                 return;
 
             var type = block.Type;
@@ -199,10 +198,10 @@ public partial class Blocks
         BlockCooldownTimer(player, block, settings.Cooldown);
     }
 
-    public static List<CBaseEntity> TempTimers = new();
+    public static List<Data> TempTimers = new();
     private static void Action_BhopDelay(CCSPlayerController player, Data data)
     {
-        if (TempTimers.Contains(data.Entity))
+        if (TempTimers.Contains(data))
             return;
 
         var block = data.Entity;
@@ -211,26 +210,46 @@ public partial class Blocks
         var cooldown = settings.Cooldown;
         var render = block.Render;
 
-        TempTimers.Add(block);
+        TempTimers.Add(data);
+
+        var clr = Utils.GetColor(data.Color);
+        int alpha = Utils.GetAlpha(data.Transparency);
+        Vector position = new Vector(block.AbsOrigin!.X, block.AbsOrigin.Y, block.AbsOrigin.Z);
+        QAngle rotation = new QAngle(block.AbsRotation!.X, block.AbsRotation.Y, block.AbsRotation.Z);
+        string model = block.CBodyComponent!.SceneNode!.GetSkeletonInstance().ModelState.ModelName;
+        string size = Utils.GetSize(data.Size).ToString();
 
         instance.AddTimer(duration, () =>
         {
-            block.CollisionRulesChanged(CollisionGroup.COLLISION_GROUP_TRIGGER);
+            if (block != null && block.IsValid)
+                block.Remove();
 
-            var clr = Utils.GetColor(data.Color);
-            int alpha = Utils.GetAlpha(data.Transparency);
-            block.Render = Color.FromArgb(alpha / 2, clr.R, clr.G, clr.B);
-            Utilities.SetStateChanged(block, "CBaseModelEntity", "m_clrRender");
+            var tempBlock = Utilities.CreateEntityByName<CPhysicsPropOverride>("prop_physics_override")!;
+            if (tempBlock != null)
+            {
+                tempBlock.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags &= ~(uint)(1 << 2);
+                tempBlock.ShadowStrength = config.Settings.Blocks.DisableShadows ? 0.0f : 1.0f;
+                tempBlock.SetModel(model);
+                tempBlock.Teleport(position, rotation);
+                tempBlock.DispatchSpawn();
+
+                tempBlock.Render = Color.FromArgb(alpha / 2, clr.R, clr.G, clr.B);
+                Utilities.SetStateChanged(tempBlock, "CBaseModelEntity", "m_clrRender");
+
+                tempBlock.AcceptInput("SetScale", tempBlock, tempBlock, size);
+                tempBlock.AcceptInput("DisableMotion");
+                tempBlock.CollisionRulesChanged(CollisionGroup.COLLISION_GROUP_TRIGGER);
+            }
 
             instance.AddTimer(cooldown, () =>
             {
-                block.CollisionRulesChanged(CollisionGroup.COLLISION_GROUP_NONE);
+                if (tempBlock != null && tempBlock.IsValid)
+                    tempBlock.Remove();
 
-                block.Render = render;
-                Utilities.SetStateChanged(block, "CBaseModelEntity", "m_clrRender");
+                Blocks.CreateBlock(null, data.Type, data.Pole, data.Size, position, rotation, data.Color, data.Transparency, data.Team, data.Effect, data.Properties);
 
-                if (TempTimers.Contains(block))
-                    TempTimers.Remove(block);
+                if (TempTimers.Contains(data))
+                    TempTimers.Remove(data);
             });
         });
     }
@@ -607,7 +626,7 @@ public partial class Blocks
         if ((data.Team == "CT" && player.Team == CsTeam.Terrorist) ||
             (data.Team == "T" && player.Team == CsTeam.CounterTerrorist))
         {
-            pawn.Teleport(pawn.AbsOrigin!.ToVector_t(), velocity: new());
+            pawn.Teleport(pawn.AbsOrigin!, velocity: new());
             return;
         }
 

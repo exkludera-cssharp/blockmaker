@@ -1,6 +1,5 @@
 ﻿using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API;
-using FixVectorLeak;
 using System.Text.Json;
 
 public static partial class Files
@@ -116,8 +115,8 @@ public static partial class Files
                             Transparency = data.Transparency,
                             Effect = data.Effect,
                             Properties = data.Properties,
-                            Position = new VectorUtils.VectorDTO(block.AbsOrigin!.ToVector_t()),
-                            Rotation = new VectorUtils.QAngleDTO(block.AbsRotation!.ToQAngle_t())
+                            Position = new VectorUtils.VectorDTO(block.AbsOrigin!),
+                            Rotation = new VectorUtils.QAngleDTO(block.AbsRotation!)
                         });
                     }
                 }
@@ -132,14 +131,14 @@ public static partial class Files
                             Entry = new Teleports.SaveData
                             {
                                 Name = teleport.Entry.Name,
-                                Position = new VectorUtils.VectorDTO(teleport.Entry.Entity.AbsOrigin!.ToVector_t()),
-                                Rotation = new VectorUtils.QAngleDTO(teleport.Entry.Entity.AbsRotation!.ToQAngle_t())
+                                Position = new VectorUtils.VectorDTO(teleport.Entry.Entity.AbsOrigin!),
+                                Rotation = new VectorUtils.QAngleDTO(teleport.Entry.Entity.AbsRotation!)
                             },
                             Exit = new Teleports.SaveData
                             {
                                 Name = teleport.Exit.Name,
-                                Position = new VectorUtils.VectorDTO(teleport.Exit.Entity.AbsOrigin!.ToVector_t()),
-                                Rotation = new VectorUtils.QAngleDTO(teleport.Exit.Entity.AbsRotation!.ToQAngle_t())
+                                Position = new VectorUtils.VectorDTO(teleport.Exit.Entity.AbsOrigin!),
+                                Rotation = new VectorUtils.QAngleDTO(teleport.Exit.Entity.AbsRotation!)
                             }
                         });
                     }
@@ -159,8 +158,8 @@ public static partial class Files
                             Style = data.Style,
                             Brightness = data.Brightness,
                             Distance = data.Distance,
-                            Position = new VectorUtils.VectorDTO(entity.AbsOrigin!.ToVector_t()),
-                            Rotation = new VectorUtils.QAngleDTO(entity.AbsRotation!.ToQAngle_t())
+                            Position = new VectorUtils.VectorDTO(entity.AbsOrigin!),
+                            Rotation = new VectorUtils.QAngleDTO(entity.AbsRotation!)
                         });
                     }
                 }
@@ -248,13 +247,13 @@ public static partial class Files
                 {
                     foreach (var teleportPairData in teleportsList)
                     {
-                        var entryPosition = new Vector_t(teleportPairData.Entry.Position.X, teleportPairData.Entry.Position.Y, teleportPairData.Entry.Position.Z);
-                        var entryRotation = new QAngle_t(teleportPairData.Entry.Rotation.Pitch, teleportPairData.Entry.Rotation.Yaw, teleportPairData.Entry.Rotation.Roll);
+                        var entryPosition = new Vector(teleportPairData.Entry.Position.X, teleportPairData.Entry.Position.Y, teleportPairData.Entry.Position.Z);
+                        var entryRotation = new QAngle(teleportPairData.Entry.Rotation.Pitch, teleportPairData.Entry.Rotation.Yaw, teleportPairData.Entry.Rotation.Roll);
 
                         var entryEntity = Teleports.CreateEntity(entryPosition, entryRotation, teleportPairData.Entry.Name);
 
-                        var exitPosition = new Vector_t(teleportPairData.Exit.Position.X, teleportPairData.Exit.Position.Y, teleportPairData.Exit.Position.Z);
-                        var exitRotation = new QAngle_t(teleportPairData.Exit.Rotation.Pitch, teleportPairData.Exit.Rotation.Yaw, teleportPairData.Exit.Rotation.Roll);
+                        var exitPosition = new Vector(teleportPairData.Exit.Position.X, teleportPairData.Exit.Position.Y, teleportPairData.Exit.Position.Z);
+                        var exitRotation = new QAngle(teleportPairData.Exit.Rotation.Pitch, teleportPairData.Exit.Rotation.Yaw, teleportPairData.Exit.Rotation.Roll);
 
                         var exitEntity = Teleports.CreateEntity(exitPosition, exitRotation, teleportPairData.Exit.Name);
 
@@ -279,8 +278,8 @@ public static partial class Files
                             lightData.Style,
                             lightData.Brightness,
                             lightData.Distance,
-                            new Vector_t(lightData.Position.X, lightData.Position.Y, lightData.Position.Z),
-                            new QAngle_t(lightData.Rotation.Pitch, lightData.Rotation.Yaw, lightData.Rotation.Roll)
+                            new Vector(lightData.Position.X, lightData.Position.Y, lightData.Position.Z),
+                            new QAngle(lightData.Rotation.Pitch, lightData.Rotation.Yaw, lightData.Rotation.Roll)
                         );
                     }
                 }

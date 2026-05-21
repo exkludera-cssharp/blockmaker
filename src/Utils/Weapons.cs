@@ -20,7 +20,7 @@
         new Weapon("M4A1", "weapon_m4a1"),
         new Weapon("M4A1-S", "weapon_m4a1_silencer"),
         new Weapon("Galil AR", "weapon_galilar"),
-        new Weapon("SG 556", "weapon_sg556"),
+        new Weapon("SG 553", "weapon_sg556"),
 
         new Weapon("SCAR-20", "weapon_scar20"),
         new Weapon("SSG 08", "weapon_ssg08"),
