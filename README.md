@@ -32,6 +32,7 @@
 - [MultiAddonManager](https://github.com/Source2ZE/MultiAddonManager)
 - [Block Maker Addon](https://steamcommunity.com/sharedfiles/filedetails/?id=3430295154)
 - [CS2MenuManager](https://github.com/schwarper/CS2MenuManager)
+- [Ray-Trace](https://github.com/FUNPLAY-pro-CS2/Ray-Trace)
 - [ChaseMod](https://github.com/ipsvn/ChaseMod) (optional for gameplay)
 
 ## Showcase
