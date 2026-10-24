@@ -109,6 +109,12 @@ public static class Events
         {
             resources.Add(model.Block);
             resources.Add(model.Pole);
+
+            foreach (var size in Config.Settings.Blocks.Sizes)
+            {
+                resources.Add(Utils.ApplyModelSuffix(model.Block, size.ModelSuffix));
+                resources.Add(Utils.ApplyModelSuffix(model.Pole, size.ModelSuffix));
+            }
         }
 
         foreach (var resource in resources)

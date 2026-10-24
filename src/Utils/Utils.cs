@@ -109,7 +109,7 @@ public static class Utils
         }
     }
 
-    public static string GetModelFromSelectedBlock(string blockType, bool pole)
+    public static string GetModelFromSelectedBlock(string blockType, bool pole, string size = "")
     {
         int hyphenIndex = blockType.IndexOf('.');
         if (hyphenIndex >= 0)
@@ -119,10 +119,33 @@ public static class Utils
         foreach (var model in blockModels.GetAllBlocks())
         {
             if (model.Title.Equals(blockType, StringComparison.OrdinalIgnoreCase))
-                return pole ? model.Pole : model.Block;
+                return ApplyModelSuffix(pole ? model.Pole : model.Block, GetModelSuffix(size));
         }
 
         return string.Empty;
+    }
+
+    public static string ApplyModelSuffix(string modelPath, string suffix)
+    {
+        if (string.IsNullOrEmpty(modelPath) || string.IsNullOrEmpty(suffix))
+            return modelPath;
+
+        const string extension = ".vmdl";
+        if (!modelPath.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
+            return modelPath;
+
+        return modelPath.Insert(modelPath.Length - extension.Length, suffix);
+    }
+
+    private static string GetModelSuffix(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return string.Empty;
+
+        var blockSize = config.Settings.Blocks.Sizes
+            .FirstOrDefault(bs => bs.Title.Equals(input, StringComparison.OrdinalIgnoreCase));
+
+        return blockSize?.ModelSuffix ?? string.Empty;
     }
 
     public static CBaseProp? GetBlockAim(this CCSPlayerController player)

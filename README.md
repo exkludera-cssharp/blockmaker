@@ -32,7 +32,6 @@
 - [MultiAddonManager](https://github.com/Source2ZE/MultiAddonManager)
 - [Block Maker Addon](https://steamcommunity.com/sharedfiles/filedetails/?id=3430295154)
 - [CS2MenuManager](https://github.com/schwarper/CS2MenuManager)
-- [Ray-Trace](https://github.com/FUNPLAY-pro-CS2/Ray-Trace)
 - [ChaseMod](https://github.com/ipsvn/ChaseMod) (optional for gameplay)
 
 ## Showcase
@@ -79,7 +78,7 @@
         { "Title": "Small", "Size": 0.5 },
         { "Title": "Normal", "Size": 1 },
         { "Title": "Large", "Size": 2 },
-        { "Title": "X-Large", "Size": 3 }
+        { "Title": "X-Large", "Size": 3, "ModelSuffix": "_XLarge" } //models/blockmaker/platform/block_XLarge.vmdl
       ],
       "Effects": [
         { "Title": "Fire", "Particle": "particles/burning_fx/env_fire_small.vpcf" },

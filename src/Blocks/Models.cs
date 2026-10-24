@@ -15,11 +15,13 @@ public partial class Blocks
     {
         public string Title { get; set; }
         public float Size { get; set; }
+        public string ModelSuffix { get; set; }
 
-        public BlockSize(string title, float size)
+        public BlockSize(string title, float size, string modelSuffix = "")
         {
             Title = title;
             Size = size;
+            ModelSuffix = modelSuffix;
         }
     }
 

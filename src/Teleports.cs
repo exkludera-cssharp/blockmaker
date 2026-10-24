@@ -201,11 +201,11 @@ public static class Teleports
             var pawn = activator.As<CCSPlayerPawn>();
             if (pawn == null || !pawn.IsValid) return;
 
-            var angles = Config.Settings.Teleports.ForceAngles
-                ? exitEntity.AbsRotation ?? pawn.EyeAngles
-                : pawn.EyeAngles;
+            pawn.Teleport(
+                exitPosition,
+                Config.Settings.Teleports.ForceAngles ? exitEntity.AbsRotation : null,
+                exitVelocity);
 
-            pawn.Teleport(exitPosition, angles, exitVelocity);
             exitEntity.EmitSound(Config.Sounds.Blocks.Teleport);
         }
         else
@@ -218,6 +218,7 @@ public static class Teleports
                 Config.Settings.Teleports.ForceAngles ? exitEntity.AbsRotation : null,
                 exitVelocity
             );
+
             exitEntity.EmitSound(Config.Sounds.Blocks.Teleport);
         }
     }

@@ -2,7 +2,7 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Extensions;
 using CounterStrikeSharp.API.Modules.Utils;
-using RayTraceAPI;
+using Microsoft.Extensions.Options;
 using System.Drawing;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -63,24 +63,21 @@ public partial class Blocks
 
     public static void Create(CCSPlayerController player)
     {
-        var rayTrace = Plugin.RayTraceInterface.Get();
-        if (rayTrace == null) return;
-
-        TraceOptions options = new();
-
         var pawn = player.PlayerPawn.Value!;
         if (pawn == null || pawn.EyeAngles == null) return;
 
         Vector? eyePosition = new(pawn.AbsOrigin!.X, pawn.AbsOrigin.Y, pawn.AbsOrigin.Z + pawn.ViewOffset.Z);
         if (eyePosition == null) return;
 
-        if (rayTrace.TraceShape(eyePosition, pawn.EyeAngles, pawn, options, out TraceResult result) && !result.DidHit)
+        var trace = Trace.TraceShape(eyePosition, pawn.EyeAngles, pawn);
+
+        if (!trace.DidHit())
         {
             Utils.PrintToChat(player, $"{ChatColors.Red}Could not find a valid location to create block");
             return;
         }
 
-        var endPos = result.EndPos;
+        var endPos = trace.EndPos;
         var BuilderData = Building.Builders[player.Slot];
 
         try
@@ -140,7 +137,7 @@ public partial class Blocks
             block.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags &= ~(uint)(1 << 2);
             block.ShadowStrength = config.Settings.Blocks.DisableShadows ? 0.0f : 1.0f;
 
-            string model = Utils.GetModelFromSelectedBlock(type, pole);
+            string model = Utils.GetModelFromSelectedBlock(type, pole, size);
             block.SetModel(model);
 
             block.Teleport(position, rotation);

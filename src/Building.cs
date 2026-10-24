@@ -1,7 +1,6 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
-using RayTraceAPI;
 using System.Data;
 using System.Drawing;
 using static WeaponList;
@@ -131,15 +130,12 @@ public static class Building
 
             Vector position = new(pawn.AbsOrigin!.X, pawn.AbsOrigin.Y, pawn.AbsOrigin.Z + pawn.ViewOffset!.Z);
 
-            var rayTrace = Plugin.RayTraceInterface.Get();
-            if (rayTrace == null) return;
+            var trace = Trace.TraceShape(position, pawn.EyeAngles, pawn);
 
-            TraceOptions options = new();
-
-            if (rayTrace.TraceShape(position, pawn.EyeAngles, pawn, options, out TraceResult result) && !result.DidHit)
+            if (!trace.DidHit())
                 return;
 
-            var endPos = result.EndPos;
+            var endPos = trace.EndPos;
 
             string size = "1";
 

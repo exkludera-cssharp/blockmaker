@@ -1,7 +1,6 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
-using RayTraceAPI;
 using System.Drawing;
 
 public partial class Lights
@@ -61,21 +60,18 @@ public partial class Lights
         var pawn = player.Pawn();
         if (pawn == null) return;
 
-        var rayTrace = Plugin.RayTraceInterface.Get();
-        if (rayTrace == null) return;
-
-        TraceOptions options = new();
-
         Vector? eyePosition = new(pawn.AbsOrigin!.X, pawn.AbsOrigin.Y, pawn.AbsOrigin.Z + pawn.ViewOffset.Z);
         if (eyePosition == null) return;
 
-        if (rayTrace.TraceShape(eyePosition, pawn.EyeAngles, pawn, options, out TraceResult result) && !result.DidHit)
+        var trace = Trace.TraceShape(eyePosition, pawn.EyeAngles, pawn);
+
+        if (!trace.DidHit())
         {
             Utils.PrintToChat(player, $"{ChatColors.Red}Could not find a valid location to create light");
             return;
         }
 
-        var endPos = result.EndPos;
+        var endPos = trace.EndPos;
 
         CreateEntity(BuilderData.LightColor, BuilderData.LightStyle, BuilderData.LightBrightness, BuilderData.LightDistance, new(endPos.X, endPos.Y, endPos.Z), null);
         Utils.PrintToChat(player, $"Created Light -" +
